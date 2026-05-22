@@ -13,6 +13,24 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Register the Minimax provider under the vendor id used in package.json
 	vscode.lm.registerLanguageModelChatProvider("minimax", provider);
 
+	// Check if API key exists on activation, if not prompt user to set it
+	const existingKey = await context.secrets.get("minimax.apiKey");
+	if (!existingKey) {
+		// Small delay to ensure VS Code UI is ready
+		setTimeout(async () => {
+			const apiKey = await vscode.window.showInputBox({
+				title: "Minimax API Key Required",
+				prompt: "Enter your Minimax API key to use the extension",
+				ignoreFocusOut: true,
+				password: true,
+			});
+			if (apiKey && apiKey.trim()) {
+				await context.secrets.store("minimax.apiKey", apiKey.trim());
+				vscode.window.showInformationMessage("Minimax API Key saved. Please select a model to start chatting.");
+			}
+		}, 1000);
+	}
+
 	// Management command to configure API key
 	context.subscriptions.push(
 		vscode.commands.registerCommand("minimax.manage", async () => {
