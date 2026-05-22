@@ -31,12 +31,39 @@
 				"vendor": "Minimax",
 				"displayName": "Minimax",
 				"managementCommand": "minimax.manage"
+			},
+			{
+				"vendor": "DeepSeek",
+				"displayName": "DeepSeek",
+				"managementCommand": "deepseek.manage"
+			},
+			{
+				"vendor": "Qwen",
+				"displayName": "Qwen",
+				"managementCommand": "qwen.manage"
+			},
+			{
+				"vendor": "Kimi",
+				"displayName": "Kimi",
+				"managementCommand": "kimi.manage"
 			}
 		],
 		"commands": [
 			{
 				"command": "minimax.manage",
 				"title": "Manage Minimax Provider"
+			},
+			{
+				"command": "deepseek.manage",
+				"title": "Manage DeepSeek Provider"
+			},
+			{
+				"command": "qwen.manage",
+				"title": "Manage Qwen Provider"
+			},
+			{
+				"command": "kimi.manage",
+				"title": "Manage Kimi Provider"
 			}
 		]
 	},
