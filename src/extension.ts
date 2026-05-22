@@ -11,7 +11,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const provider = new HuggingFaceChatModelProvider(context.secrets, ua);
 	// Register the Minimax provider under the vendor id used in package.json
-	vscode.lm.registerLanguageModelChatProvider("minimax", provider);
+	vscode.lm.registerLanguageModelChatProvider("Minimax", provider);
 
 	// Check if API key exists on activation, if not prompt user to set it
 	const existingKey = await context.secrets.get("minimax.apiKey");

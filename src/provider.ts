@@ -14,24 +14,89 @@ import type { HFModelItem, HFModelsResponse } from "./types";
 import { convertTools, convertMessages, tryParseJSONObject, validateRequest } from "./utils";
 
 const BASE_URL = "https://api.minimaxi.chat/v1";
+const DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1";
+const QWEN_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1";
+const KIMI_BASE_URL = "https://api.moonshot.cn/v1";
 
-// MiniMax models - https://platform.minimaxi.com/docs/api-reference/api-overview
-const MINIMAX_MODELS = [
-	{ id: "MiniMax-M2.7", name: "MiniMax M2.7", contextLength: 204800 },
-	{ id: "MiniMax-M2.7-highspeed", name: "MiniMax M2.7 (Highspeed)", contextLength: 204800 },
-	{ id: "MiniMax-M2.5", name: "MiniMax M2.5", contextLength: 204800 },
-	{ id: "MiniMax-M2.5-highspeed", name: "MiniMax M2.5 (Highspeed)", contextLength: 204800 },
-	{ id: "MiniMax-M2.1", name: "MiniMax M2.1", contextLength: 204800 },
-	{ id: "MiniMax-M2.1-highspeed", name: "MiniMax M2.1 (Highspeed)", contextLength: 204800 },
-	{ id: "MiniMax-M2", name: "MiniMax M2", contextLength: 204800 },
-];
+/** Provider configuration for a single vendor. */
+export interface ProviderVendorConfig {
+	vendor: string;
+	baseUrl: string;
+	apiKeySecretName: string;
+	models: Array<{ id: string; name: string; contextLength: number }>;
+	chatEndpoint: string;
+	family: string;
+	tooltip: string;
+}
+
+// Pre-defined vendor configs
+export const MINIMAX_CONFIG: ProviderVendorConfig = {
+	vendor: "Minimax",
+	baseUrl: "https://api.minimaxi.chat/v1",
+	apiKeySecretName: "minimax.apiKey",
+	models: [
+		{ id: "MiniMax-M2.7", name: "MiniMax M2.7", contextLength: 204800 },
+		{ id: "MiniMax-M2.7-highspeed", name: "MiniMax M2.7 (Highspeed)", contextLength: 204800 },
+		{ id: "MiniMax-M2.5", name: "MiniMax M2.5", contextLength: 204800 },
+		{ id: "MiniMax-M2.5-highspeed", name: "MiniMax M2.5 (Highspeed)", contextLength: 204800 },
+		{ id: "MiniMax-M2.1", name: "MiniMax M2.1", contextLength: 204800 },
+		{ id: "MiniMax-M2.1-highspeed", name: "MiniMax M2.1 (Highspeed)", contextLength: 204800 },
+		{ id: "MiniMax-M2", name: "MiniMax M2", contextLength: 204800 },
+	],
+	chatEndpoint: "/chat/completions",
+	family: "minimax",
+	tooltip: "MiniMax via API",
+};
+
+export const DEEPSEEK_CONFIG: ProviderVendorConfig = {
+	vendor: "DeepSeek",
+	baseUrl: "https://api.deepseek.com/v1",
+	apiKeySecretName: "deepseek.apiKey",
+	models: [
+		{ id: "deepseek-chat", name: "DeepSeek V3", contextLength: 64000 },
+		{ id: "deepseek-reasoner", name: "DeepSeek R1", contextLength: 64000 },
+	],
+	chatEndpoint: "/chat/completions",
+	family: "deepseek",
+	tooltip: "DeepSeek via API",
+};
+
+export const QWEN_CONFIG: ProviderVendorConfig = {
+	vendor: "Qwen",
+	baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+	apiKeySecretName: "qwen.apiKey",
+	models: [
+		{ id: "qwen-plus", name: "Qwen Plus", contextLength: 131072 },
+		{ id: "qwen-max", name: "Qwen Max", contextLength: 32768 },
+		{ id: "qwen-turbo", name: "Qwen Turbo", contextLength: 131072 },
+		{ id: "qwen-coder-plus", name: "Qwen Coder Plus", contextLength: 131072 },
+	],
+	chatEndpoint: "/chat/completions",
+	family: "qwen",
+	tooltip: "Qwen (Tongyi) via API",
+};
+
+export const KIMI_CONFIG: ProviderVendorConfig = {
+	vendor: "Kimi",
+	baseUrl: "https://api.moonshot.cn/v1",
+	apiKeySecretName: "kimi.apiKey",
+	models: [
+		{ id: "moonshot-v1-8k", name: "Kimi V1 8K", contextLength: 8192 },
+		{ id: "moonshot-v1-32k", name: "Kimi V1 32K", contextLength: 32768 },
+		{ id: "moonshot-v1-128k", name: "Kimi V1 128K", contextLength: 131072 },
+		{ id: "kimi-latest", name: "Kimi Latest", contextLength: 131072 },
+	],
+	chatEndpoint: "/chat/completions",
+	family: "kimi",
+	tooltip: "Kimi (Moonshot) via API",
+};
 const DEFAULT_MAX_OUTPUT_TOKENS = 16000;
 const DEFAULT_CONTEXT_LENGTH = 128000;
 
 /**
  * VS Code Chat provider backed by Hugging Face Inference Providers.
  */
-export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
+export class GenericChatModelProvider implements LanguageModelChatProvider {
 	private _chatEndpoints: { model: string; modelMaxPromptTokens: number }[] = [];
 	/** Buffer for assembling streamed tool calls by index. */
 	private _toolCallBuffers: Map<number, { id?: string; name?: string; args: string }> = new Map<
@@ -64,10 +129,13 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 	/**
 	 * Create a provider using the given secret storage for the API key.
 	 * @param secrets VS Code secret storage.
+	 * @param userAgent User agent string.
+	 * @param config Vendor-specific configuration.
 	 */
 	constructor(
 		private readonly secrets: vscode.SecretStorage,
-		private readonly userAgent: string
+		private readonly userAgent: string,
+		private readonly config: ProviderVendorConfig
 	) {}
 
 	/** Roughly estimate tokens for VS Code chat messages (text only) */
@@ -105,13 +173,33 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 	 * @returns A promise that resolves to the list of available language models
 	 */
 	async prepareLanguageModelChatInformation(
-		options: { silent: boolean },
-		_token: CancellationToken
-	): Promise<LanguageModelChatInformation[]> {
-		const apiKey = await this.ensureApiKey(options.silent);
-		if (!apiKey) {
-			return [];
-		}
+			options: { silent: boolean },
+			_token: CancellationToken
+		): Promise<LanguageModelChatInformation[]> {
+			// Check if API key exists
+			let apiKey = await this.secrets.get("minimax.apiKey");
+
+			// Always prompt for API key if missing, regardless of silent flag
+			if (!apiKey) {
+				apiKey = await this.promptForApiKey();
+			}
+
+			// If still no API key (user canceled), show setup prompt
+			if (!apiKey) {
+				return [{
+					id: "__setup__",
+					name: "⚠️ Configure MiniMax API Key",
+					tooltip: "Click to configure your MiniMax API key using the 'minimax.manage' command",
+					family: "minimax",
+					version: "1.0.0",
+					maxInputTokens: 0,
+					maxOutputTokens: 0,
+					capabilities: {
+						toolCalling: false,
+						imageInput: false,
+					},
+				} satisfies LanguageModelChatInformation];
+			}
 
 		// Build model information from static MiniMax model list
 		const infos: LanguageModelChatInformation[] = MINIMAX_MODELS.map((m) => {
@@ -196,9 +284,13 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			},
 		};
 		try {
-			const apiKey = await this.ensureApiKey(true);
+			// Force show input box if no API key (ignore silent flag)
+			let apiKey = await this.secrets.get("minimax.apiKey");
 			if (!apiKey) {
-				throw new Error("Hugging Face API key not found");
+				apiKey = await this.promptForApiKey();
+				if (!apiKey) {
+					throw new Error("MiniMax API key is required. Run 'minimax.manage' command to configure.");
+				}
 			}
 
 			const openaiMessages = convertMessages(messages);
@@ -250,7 +342,7 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			if (toolConfig.tool_choice) {
 				(requestBody as Record<string, unknown>).tool_choice = toolConfig.tool_choice;
 			}
-			const response = await fetch(`${BASE_URL}/text/chatcompletion_v2`, {
+			const response = await fetch(`${BASE_URL}/chat/completions`, {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${apiKey}`,
@@ -305,6 +397,29 @@ export class HuggingFaceChatModelProvider implements LanguageModelChatProvider {
 			}
 			return totalTokens;
 		}
+	}
+
+	/**
+	 * Ensure an API key exists in SecretStorage, optionally prompting the user when not silent.
+	 * @param silent If true, do not prompt the user.
+	 */
+	/**
+	 * Prompt user for API key using a visible input box (ignores silent flag).
+	 */
+	private async promptForApiKey(): Promise<string | undefined> {
+		const entered = await vscode.window.showInputBox({
+			title: "MiniMax API Key Required",
+			prompt: "Enter your MiniMax API key to use the extension",
+			ignoreFocusOut: true,
+			password: true,
+		});
+		if (entered && entered.trim()) {
+			const apiKey = entered.trim();
+			await this.secrets.store("minimax.apiKey", apiKey);
+			vscode.window.showInformationMessage("MiniMax API Key saved.");
+			return apiKey;
+		}
+		return undefined;
 	}
 
 	/**

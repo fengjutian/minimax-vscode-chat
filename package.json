@@ -29,7 +29,7 @@
 		"languageModelChatProviders": [
 			{
 				"vendor": "Minimax",
-				"displayName": "Minimax 2.7",
+				"displayName": "Minimax",
 				"managementCommand": "minimax.manage"
 			}
 		],
