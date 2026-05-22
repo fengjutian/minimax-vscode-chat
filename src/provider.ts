@@ -177,7 +177,7 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 			_token: CancellationToken
 		): Promise<LanguageModelChatInformation[]> {
 			// Check if API key exists
-			let apiKey = await this.secrets.get("minimax.apiKey");
+			let apiKey = await this.secrets.get(this.config.apiKeySecretName);
 
 			// Always prompt for API key if missing, regardless of silent flag
 			if (!apiKey) {
@@ -188,9 +188,9 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 			if (!apiKey) {
 				return [{
 					id: "__setup__",
-					name: "⚠️ Configure MiniMax API Key",
-					tooltip: "Click to configure your MiniMax API key using the 'minimax.manage' command",
-					family: "minimax",
+					name: `⚠️ Configure ${this.config.vendor} API Key`,
+					tooltip: `Click to configure your ${this.config.vendor} API key using the '${this.config.family}.manage' command`,
+					family: this.config.family,
 					version: "1.0.0",
 					maxInputTokens: 0,
 					maxOutputTokens: 0,
@@ -202,14 +202,14 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 			}
 
 		// Build model information from static MiniMax model list
-		const infos: LanguageModelChatInformation[] = MINIMAX_MODELS.map((m) => {
+		const infos: LanguageModelChatInformation[] = this.config.models.map((m) => {
 			const maxOutput = DEFAULT_MAX_OUTPUT_TOKENS;
 			const maxInput = Math.max(1, m.contextLength - maxOutput);
 			return {
 				id: m.id,
 				name: m.name,
-				tooltip: "MiniMax via API",
-				family: "minimax",
+				tooltip: this.config.tooltip,
+				family: this.config.family,
 				version: "1.0.0",
 				maxInputTokens: maxInput,
 				maxOutputTokens: maxOutput,
@@ -276,7 +276,7 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 				try {
 					progress.report(part);
 				} catch (e) {
-					console.error("[Hugging Face Model Provider] Progress.report failed", {
+					console.error("[${this.config.vendor} Provider] Progress.report failed", {
 						modelId: model.id,
 						error: e instanceof Error ? { name: e.name, message: e.message } : String(e),
 					});
@@ -285,11 +285,11 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 		};
 		try {
 			// Force show input box if no API key (ignore silent flag)
-			let apiKey = await this.secrets.get("minimax.apiKey");
+			let apiKey = await this.secrets.get(this.config.apiKeySecretName);
 			if (!apiKey) {
 				apiKey = await this.promptForApiKey();
 				if (!apiKey) {
-					throw new Error("MiniMax API key is required. Run 'minimax.manage' command to configure.");
+					throw new Error(`${this.config.vendor} API key is required. Run '${this.config.family}.manage' command to configure.`);
 				}
 			}
 
@@ -307,7 +307,7 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 			const toolTokenCount = this.estimateToolTokens(toolConfig.tools);
 			const tokenLimit = Math.max(1, model.maxInputTokens);
 			if (inputTokenCount + toolTokenCount > tokenLimit) {
-				console.error("[Hugging Face Model Provider] Message exceeds token limit", {
+				console.error("[${this.config.vendor} Provider] Message exceeds token limit", {
 					total: inputTokenCount + toolTokenCount,
 					tokenLimit,
 				});
@@ -342,7 +342,7 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 			if (toolConfig.tool_choice) {
 				(requestBody as Record<string, unknown>).tool_choice = toolConfig.tool_choice;
 			}
-			const response = await fetch(`${BASE_URL}/chat/completions`, {
+			const response = await fetch(`${this.config.baseUrl}${this.config.chatEndpoint}`, {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${apiKey}`,
@@ -354,18 +354,18 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 
 			if (!response.ok) {
 				const errorText = await response.text();
-				console.error("[Hugging Face Model Provider] HF API error response", errorText);
+				console.error("[${this.config.vendor} Provider] HF API error response", errorText);
 				throw new Error(
-					`Hugging Face API error: ${response.status} ${response.statusText}${errorText ? `\n${errorText}` : ""}`
+					`${this.config.vendor} API error: ${response.status} ${response.statusText}${errorText ? `\n${errorText}` : ""}`
 				);
 			}
 
 			if (!response.body) {
-				throw new Error("No response body from Hugging Face API");
+				throw new Error(`No response body from ${this.config.vendor} API`);
 			}
 			await this.processStreamingResponse(response.body, trackingProgress, token);
 		} catch (err) {
-			console.error("[Hugging Face Model Provider] Chat request failed", {
+			console.error("[${this.config.vendor} Provider] Chat request failed", {
 				modelId: model.id,
 				messageCount: messages.length,
 				error: err instanceof Error ? { name: err.name, message: err.message } : String(err),
@@ -408,15 +408,15 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 	 */
 	private async promptForApiKey(): Promise<string | undefined> {
 		const entered = await vscode.window.showInputBox({
-			title: "MiniMax API Key Required",
-			prompt: "Enter your MiniMax API key to use the extension",
+			title: `${this.config.vendor} API Key Required`,
+			prompt: `Enter your ${this.config.vendor} API key to use the extension`,
 			ignoreFocusOut: true,
 			password: true,
 		});
 		if (entered && entered.trim()) {
 			const apiKey = entered.trim();
-			await this.secrets.store("minimax.apiKey", apiKey);
-			vscode.window.showInformationMessage("MiniMax API Key saved.");
+			await this.secrets.store(this.config.apiKeySecretName, apiKey);
+			vscode.window.showInformationMessage(`${this.config.vendor} API Key saved.`);
 			return apiKey;
 		}
 		return undefined;
@@ -427,17 +427,17 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 	 * @param silent If true, do not prompt the user.
 	 */
 	private async ensureApiKey(silent: boolean): Promise<string | undefined> {
-		let apiKey = await this.secrets.get("minimax.apiKey");
+		let apiKey = await this.secrets.get(this.config.apiKeySecretName);
 		if (!apiKey && !silent) {
 			const entered = await vscode.window.showInputBox({
-				title: "Minimax API Key",
-				prompt: "Enter your Minimax API key",
+				title: `${this.config.vendor} API Key`,
+				prompt: `Enter your ${this.config.vendor} API key`,
 				ignoreFocusOut: true,
 				password: true,
 			});
 			if (entered && entered.trim()) {
 				apiKey = entered.trim();
-				await this.secrets.store("minimax.apiKey", apiKey);
+				await this.secrets.store(this.config.apiKeySecretName, apiKey);
 			}
 		}
 		return apiKey;
@@ -839,7 +839,7 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 			const parsed = tryParseJSONObject(buf.args);
 			if (!parsed.ok) {
 				if (throwOnInvalid) {
-					console.error("[Hugging Face Model Provider] Invalid JSON for tool call", {
+					console.error("[${this.config.vendor} Provider] Invalid JSON for tool call", {
 						idx,
 						snippet: (buf.args || "").slice(0, 200),
 					});

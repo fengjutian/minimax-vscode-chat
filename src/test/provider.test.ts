@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { HuggingFaceChatModelProvider } from "../provider";
+import { GenericChatModelProvider, MINIMAX_CONFIG } from "../provider";
 import { convertMessages, convertTools, validateRequest, validateTools, tryParseJSONObject } from "../utils";
 
 interface OpenAIToolCall {
@@ -19,12 +19,12 @@ interface ConvertedMessage {
 suite("HuggingFace Chat Provider Extension", () => {
 	suite("provider", () => {
 		test("prepareLanguageModelChatInformation returns array (no key -> empty)", async () => {
-			const provider = new HuggingFaceChatModelProvider({
+			const provider = new GenericChatModelProvider({
 				get: async () => undefined,
 				store: async () => {},
 				delete: async () => {},
 				onDidChange: (_listener: unknown) => ({ dispose() {} }),
-			} as unknown as vscode.SecretStorage, "GitHubCopilotChat/test VSCode/test");
+			} as unknown as vscode.SecretStorage, "GitHubCopilotChat/test VSCode/test", MINIMAX_CONFIG);
 
 			const infos = await provider.prepareLanguageModelChatInformation(
 				{ silent: true },
@@ -34,12 +34,12 @@ suite("HuggingFace Chat Provider Extension", () => {
 		});
 
 		test("provideTokenCount counts simple string", async () => {
-			const provider = new HuggingFaceChatModelProvider({
+			const provider = new GenericChatModelProvider({
 				get: async () => undefined,
 				store: async () => {},
 				delete: async () => {},
 				onDidChange: (_listener: unknown) => ({ dispose() {} }),
-			} as unknown as vscode.SecretStorage, "GitHubCopilotChat/test VSCode/test");
+			} as unknown as vscode.SecretStorage, "GitHubCopilotChat/test VSCode/test", MINIMAX_CONFIG);
 
 			const est = await provider.provideTokenCount(
 				{
@@ -59,12 +59,12 @@ suite("HuggingFace Chat Provider Extension", () => {
 		});
 
 		test("provideTokenCount counts message parts", async () => {
-			const provider = new HuggingFaceChatModelProvider({
+			const provider = new GenericChatModelProvider({
 				get: async () => undefined,
 				store: async () => {},
 				delete: async () => {},
 				onDidChange: (_listener: unknown) => ({ dispose() {} }),
-			} as unknown as vscode.SecretStorage, "GitHubCopilotChat/test VSCode/test");
+			} as unknown as vscode.SecretStorage, "GitHubCopilotChat/test VSCode/test", MINIMAX_CONFIG);
 
 			const msg: vscode.LanguageModelChatMessage = {
 				role: vscode.LanguageModelChatMessageRole.User,
@@ -89,12 +89,12 @@ suite("HuggingFace Chat Provider Extension", () => {
 		});
 
 		test("provideLanguageModelChatResponse throws without API key", async () => {
-			const provider = new HuggingFaceChatModelProvider({
+			const provider = new GenericChatModelProvider({
 				get: async () => undefined,
 				store: async () => {},
 				delete: async () => {},
 				onDidChange: (_listener: unknown) => ({ dispose() {} }),
-			} as unknown as vscode.SecretStorage, "GitHubCopilotChat/test VSCode/test");
+			} as unknown as vscode.SecretStorage, "GitHubCopilotChat/test VSCode/test", MINIMAX_CONFIG);
 
 			let threw = false;
 			try {
