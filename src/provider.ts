@@ -13,7 +13,7 @@ import type { HFModelItem, HFModelsResponse } from "./types";
 
 import { convertTools, convertMessages, tryParseJSONObject, validateRequest } from "./utils";
 
-const BASE_URL = "https://api.minimaxi.chat/v1";
+const BASE_URL = "https://api.minimaxi.com/v1";
 const DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1";
 const QWEN_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1";
 const KIMI_BASE_URL = "https://api.moonshot.cn/v1";
@@ -32,7 +32,7 @@ export interface ProviderVendorConfig {
 // Pre-defined vendor configs
 export const MINIMAX_CONFIG: ProviderVendorConfig = {
 	vendor: "Minimax",
-	baseUrl: "https://api.minimaxi.chat/v1",
+	baseUrl: "https://api.minimaxi.com/v1",
 	apiKeySecretName: "minimax.apiKey",
 	models: [
 		{ id: "MiniMax-M2.7", name: "MiniMax M2.7", contextLength: 204800 },
