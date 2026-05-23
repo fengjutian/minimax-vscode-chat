@@ -1,7 +1,7 @@
 {
-	"name": "minimax-vscode-chat",
-	"publisher": "Minimax",
-	"displayName": "Minimax Provider for GitHub Copilot Chat",
+	"name": "copilot-multi-provider",
+	"publisher": "fengjutian",
+	"displayName": "Multi-Provider for GitHub Copilot Chat",
 	"description": "An extension that integrates Minimax Inference Providers into GitHub Copilot Chat",
 	"icon": "assets/logo.png",
 	"repository": {
