@@ -177,15 +177,16 @@ export class GenericChatModelProvider implements LanguageModelChatProvider {
 			_token: CancellationToken
 		): Promise<LanguageModelChatInformation[]> {
 			// Check if API key exists
-			let apiKey = await this.secrets.get(this.config.apiKeySecretName);
+						const apiKey = await this.secrets.get(this.config.apiKeySecretName);
 
-			// Always prompt for API key if missing, regardless of silent flag
-			if (!apiKey) {
-				apiKey = await this.promptForApiKey();
-			}
+			// Only prompt for API key if not silent and no key exists
+						if (!apiKey && !options.silent) {
+							await this.promptForApiKey();
+						}
 
-			// If still no API key (user canceled), show setup prompt
-			if (!apiKey) {
+						// Check again after potential prompt
+						const finalApiKey = await this.secrets.get(this.config.apiKeySecretName);
+						if (!finalApiKey) {
 				return [{
 					id: "__setup__",
 					name: `⚠️ Configure ${this.config.vendor} API Key`,

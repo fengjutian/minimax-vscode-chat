@@ -5,5 +5,13 @@
     "git.branchProtection": [
         "main"
     ],
-    "files.trimTrailingWhitespace": true
+    "files.trimTrailingWhitespace": true,
+    "[python]": {
+            "editor.defaultFormatter": "ms-python.python",
+            "editor.formatOnSave": true,
+            "editor.codeActionsOnSave": {
+                "source.organizeImports": "explicit"
+            },
+            "editor.linesBetweenRelatedStatements": 0
+        }
 }
