@@ -1,14 +1,14 @@
 {
-	"name": "huggingface-vscode-chat",
-	"publisher": "HuggingFace",
-	"displayName": "Hugging Face Provider for GitHub Copilot Chat",
-	"description": "An extension that integrates Hugging Face Inference Providers into GitHub Copilot Chat",
+	"name": "copilot-multi-provider",
+	"publisher": "copilot-multi-provider",
+	"displayName": "Multi-Provider for GitHub Copilot Chat",
+	"description": "An extension that integrates Minimax Inference Providers into GitHub Copilot Chat",
 	"icon": "assets/logo.png",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/huggingface/huggingface-vscode-chat"
+		"url": ""
 	},
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"engines": {
 		"vscode": "^1.104.0"
 	},
@@ -20,35 +20,53 @@
 		"color": "#100f11",
 		"theme": "dark"
 	},
-	"badges": [
-		{
-		"url": "https://img.shields.io/github/stars/huggingface/huggingface-vscode-chat?style=social",
-		"description": "Star huggingface-vscode-chat on Github",
-		"href": "https://github.com/huggingface/huggingface-vscode-chat"
-		},
-		{
-		"url": "https://img.shields.io/twitter/follow/huggingface?style=social",
-		"description": "Follow Hugging Face on Twitter",
-		"href": "https://x.com/huggingface"
-		}
-	],
-	"homepage": "https://huggingface.co/docs/inference-providers/en/index",
+	"homepage": "",
 	"bugs": {
-		"url": "https://github.com/huggingface/huggingface-vscode-chat/issues"
+		"url": ""
 	},
 	"license": "MIT",
+	"activationEvents": [
+		"onLanguageModelChat"
+	],
 	"contributes": {
 		"languageModelChatProviders": [
 			{
 				"vendor": "Minimax",
-				"displayName": "Minimax 2.7",
+				"displayName": "Minimax",
 				"managementCommand": "minimax.manage"
+			},
+			{
+				"vendor": "DeepSeek",
+				"displayName": "DeepSeek",
+				"managementCommand": "deepseek.manage"
+			},
+			{
+				"vendor": "Qwen",
+				"displayName": "Qwen",
+				"managementCommand": "qwen.manage"
+			},
+			{
+				"vendor": "Kimi",
+				"displayName": "Kimi",
+				"managementCommand": "kimi.manage"
 			}
 		],
 		"commands": [
 			{
 				"command": "minimax.manage",
 				"title": "Manage Minimax Provider"
+			},
+			{
+				"command": "deepseek.manage",
+				"title": "Manage DeepSeek Provider"
+			},
+			{
+				"command": "qwen.manage",
+				"title": "Manage Qwen Provider"
+			},
+			{
+				"command": "kimi.manage",
+				"title": "Manage Kimi Provider"
 			}
 		]
 	},
