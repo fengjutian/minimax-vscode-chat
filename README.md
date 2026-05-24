@@ -1,62 +1,87 @@
-# 🤗 Hugging Face Provider for GitHub Copilot Chat
+# Multi-Provider for GitHub Copilot Chat
 
-![Demo](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/inference-providers-guides/demo_vscode.gif)
-
-Use frontier open LLMs like Kimi K2, DeepSeek V3.1, GLM 4.5 and more in VS Code with GitHub Copilot Chat powered by [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers/index) 🔥
+A VS Code extension that integrates multiple AI inference providers into GitHub Copilot Chat, allowing you to use models from Minimax, DeepSeek, Qwen, and Kimi directly in VS Code.
 
 ---
 
 ## ⚡ Quick Start
-1. Install the HF Copilot Chat extension [here](https://marketplace.visualstudio.com/items?itemName=HuggingFace.huggingface-vscode-chat).
-2. Open VS Code's chat interface.
-3. Click the model picker and click "Manage Models...".
-4. Select "Hugging Face" provider.
-5. Provide your Hugging Face Token, you can get one in your [settings page](https://huggingface.co/settings/tokens/new?ownUserPermissions=inference.serverless.write&tokenType=fineGrained). You only need to give it the inference.serverless permissions.
-6. Choose the models you want to add to the model picker. 🥳
 
-Each model entry also offers `cheapest` and `fastest` mode for each model. `fastest` selects the provider with highest throughput and `cheapest` selects the provider with lowest price per output token.
-
-## ✨ Why use the Hugging Face provider in Copilot
-* Access [SoTA open-source LLMs](https://huggingface.co/models?pipeline_tag=text-generation&inference_provider=cerebras,together,fireworks-ai,nebius,novita,sambanova,groq,hyperbolic,nscale,fal-ai,cohere,replicate,scaleway,black-forest-labs,ovhcloud&sort=trending) with tool calling capabilities.
-* Single API to switch between multiple providers: Cerebras, Cohere, Fireworks AI, Groq, HF Inference, Hyperbolic, Nebius, Novita, Nscale, SambaNova, Together AI, and more. See the full list of partners in the [Inference Providers docs](https://huggingface.co/docs/inference-providers/index#partners).
-* Built for high availability (across providers) and low latency.
-* Transparent pricing: what the provider charges is what you pay.
-
-💡 The free Hugging Face user tier gives you a small amount of monthly inference credits to experiment. Upgrade to [Hugging Face PRO](https://huggingface.co/pro) or [Enterprise](https://huggingface.co/enterprise) for $2 in monthly credits plus pay-as-you-go access across all providers!
+1. Install this extension in VS Code
+2. Open VS Code's chat interface (Ctrl+Shift+I / Cmd+Shift+I)
+3. Click the model picker and select "Manage Models..."
+4. Choose your preferred provider (Minimax, DeepSeek, Qwen, or Kimi)
+5. Run the management command to set your API Key:
+   - `Minimax: Minimax` → `minimax.manage`
+   - `DeepSeek: DeepSeek` → `deepseek.manage`
+   - `Qwen: Qwen` → `qwen.manage`
+   - `Kimi: Kimi` → `kimi.manage`
+6. Select a model and start chatting! 🎉
 
 ---
 
-## Requirements
-* VS Code 1.104.0 or higher.
-* Hugging Face access token with `inference.serverless` permissions.
+## ✨ Features
+
+- **Multiple Providers**: Use models from Minimax, DeepSeek, Qwen, and Kimi
+- **Tool Calling**: Full function calling support across all providers
+- **Secure API Key Storage**: Keys stored safely in VS Code's secret storage
+- **Streaming Responses**: Real-time streaming chat responses
+- **High Context Length**: Support for models up to 204,800 tokens (Minimax M2 series)
+
+### Supported Models
+
+| Provider | Models |
+|----------|--------|
+| **Minimax** | M2.7, M2.5, M2.1, M2 (with highspeed variants) |
+| **DeepSeek** | V3, R1 |
+| **Qwen** | Plus, Max, Turbo, Coder Plus |
+| **Kimi** | V1 8K, V1 32K, V1 128K, Latest |
+
+---
+
+## 🔧 Requirements
+
+- VS Code 1.104.0 or higher
+- API key from your selected provider
+
+### Getting API Keys
+
+- **Minimax**: [Minimax Platform](https://platform.minimaxi.com)
+- **DeepSeek**: [DeepSeek Platform](https://platform.deepseek.com)
+- **Qwen**: [Alibaba Cloud DashScope](https://dashscope.console.aliyun.com)
+- **Kimi**: [Moonshot Platform](https://platform.moonshot.cn)
+
+---
 
 ## 🛠️ Development
+
 ```bash
-git clone https://github.com/huggingface/huggingface-vscode-chat
-cd huggingface-vscode-chat
-npm install
-npm run compile
+git clone https://github.com/fengjutian/minimax-vscode-chat
+cd minimax-vscode-chat
+pnpm install
+pnpm run compile
 ```
+
 Press F5 to launch an Extension Development Host.
 
-Common scripts:
-* Build: `npm run compile`
-* Watch: `npm run watch`
-* Lint: `npm run lint`
-* Format: `npm run format`
+### Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `pnpm run compile` | Build the extension |
+| `pnpm run watch` | Watch mode for development |
+| `pnpm run lint` | Run ESLint |
+| `pnpm run format` | Format code with Prettier |
+| `pnpm run test` | Run tests |
 
 ---
 
-## 📚 Learn more
-* Inference Providers documentation: https://huggingface.co/docs/inference-providers/index
-* VS Code Chat Provider API: https://code.visualstudio.com/api/extension-guides/ai/language-model-chat-provider
+## 📚 Learn More
+
+- [VS Code Language Model Chat Provider API](https://code.visualstudio.com/api/extension-guides/ai/language-model-chat-provider)
+- [VS Code Chat Extension Guide](https://code.visualstudio.com/api/extension-guides/command#using-a-custom-when-clause-context)
 
 ---
 
-## Support & License
-* Open issues: https://github.com/huggingface/huggingface-vscode-chat/issues
-* License: MIT License Copyright (c) 2025 Hugging Face
+## 📄 License
 
-
-原理：
-https://code.visualstudio.com/api/extension-guides/ai/language-model-chat-provider
+MIT License

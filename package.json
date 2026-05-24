@@ -1,6 +1,6 @@
 {
 	"name": "copilot-multi-provider",
-	"publisher": "fengjutian",
+	"publisher": "copilot-multi-provider",
 	"displayName": "Multi-Provider for GitHub Copilot Chat",
 	"description": "An extension that integrates Minimax Inference Providers into GitHub Copilot Chat",
 	"icon": "assets/logo.png",
@@ -8,7 +8,7 @@
 		"type": "git",
 		"url": ""
 	},
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"engines": {
 		"vscode": "^1.104.0"
 	},
@@ -25,6 +25,9 @@
 		"url": ""
 	},
 	"license": "MIT",
+	"activationEvents": [
+		"onLanguageModelChat"
+	],
 	"contributes": {
 		"languageModelChatProviders": [
 			{
