@@ -53,8 +53,8 @@ export const DEEPSEEK_CONFIG: ProviderVendorConfig = {
 	baseUrl: "https://api.deepseek.com/v1",
 	apiKeySecretName: "deepseek.apiKey",
 	models: [
-		{ id: "deepseek-chat", name: "DeepSeek V3", contextLength: 64000 },
-		{ id: "deepseek-reasoner", name: "DeepSeek R1", contextLength: 64000 },
+		{ id: "deepseek-v4-pro", name: "DeepSeek V4 Pro", contextLength: 128000 },
+		{ id: "deepseek-v4-flash", name: "DeepSeek V4 Flash", contextLength: 128000 },
 	],
 	chatEndpoint: "/chat/completions",
 	family: "deepseek",
