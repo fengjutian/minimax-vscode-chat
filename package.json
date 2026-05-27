@@ -1,14 +1,14 @@
 {
-	"name": "copilot-multi-provider",
-	"publisher": "copilot-multi-provider",
-	"displayName": "Multi-Provider for GitHub Copilot Chat",
+	"name": "multi-provider",
+	"publisher": "multi-provider",
+	"displayName": "Chat#",
 	"description": "An extension that integrates Minimax Inference Providers into GitHub Copilot Chat",
 	"icon": "assets/logo.png",
 	"repository": {
 		"type": "git",
 		"url": ""
 	},
-	"version": "0.2.3",
+	"version": "0.2.5",
 	"engines": {
 		"vscode": "^1.104.0"
 	},
