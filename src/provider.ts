@@ -35,6 +35,7 @@ export const MINIMAX_CONFIG: ProviderVendorConfig = {
 	baseUrl: "https://api.minimaxi.com/v1",
 	apiKeySecretName: "minimax.apiKey",
 	models: [
+		{ id: "MiniMax-M3", name: "MiniMax M3", contextLength: 204800 },
 		{ id: "MiniMax-M2.7", name: "MiniMax M2.7", contextLength: 204800 },
 		{ id: "MiniMax-M2.7-highspeed", name: "MiniMax M2.7 (Highspeed)", contextLength: 204800 },
 		{ id: "MiniMax-M2.5", name: "MiniMax M2.5", contextLength: 204800 },
